@@ -1,0 +1,16 @@
+{
+  "name": "google-drive-fuse4js",
+  "version": "0.0.1",
+  "private": true,
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "googleapis": "0.7.0",
+    "fuse4js": "0.1.9"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
