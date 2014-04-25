@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "googleapis": "0.7.0",
-    "fuse4js": "0.1.9"
+    "fuse4js": "0.1.9",
+    "memwatch": "0.2.2"
   },
   "engines": {
     "node": "0.10.x"

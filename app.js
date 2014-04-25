@@ -11,6 +11,42 @@ var rootProfilePath = path.join(__dirname, ".profiles");
 
 //---------------------------------------------------------------------------
 
+function print_mem_usage() {
+  var memUsage = process.memoryUsage();
+  memUsage.rss = memUsage.rss.bytesToSize();
+  memUsage.heapTotal = memUsage.heapTotal.bytesToSize();
+  memUsage.heapUsed = memUsage.heapUsed.bytesToSize();
+
+  console.log('process.memoryUsage =', memUsage);
+}
+setInterval(print_mem_usage, 60 * 1000);
+
+var memwatch = require('memwatch');
+//var heapDiff;
+
+memwatch.on('stats', function(stats) {
+  var myStats = {
+    fullGc: stats.num_full_gc,
+    incGc: stats.num_inc_gc,
+    heapCompacts: stats.heap_compactions,
+    base: stats.current_base.bytesToSize()
+  };
+
+  console.log('memwatch.stats =', myStats);
+  print_mem_usage();
+
+  /*
+   if (heapDiff) {
+   var diff = heapDiff.end();
+   console.log('memwatch.heapdiff', JSON.stringify(diff, null, '  '));
+   }
+   heapDiff = new memwatch.HeapDiff();
+   */
+});
+
+
+//---------------------------------------------------------------------------
+
 function mount_all_profiles(cb) {
   fs.readdir(rootProfilePath, function (err, files) {
     files.forEach(function (file) {
@@ -92,7 +128,7 @@ function print_usage() {
     if (err) { return console.error(err); }
 
     var args = process.argv;
-    if (args.length == 2){
+    if (args.length == 2) {
       print_usage();
     } else {
       if (args.indexOf('-n') >= 0) {
