@@ -118,7 +118,7 @@ function create_new_profile(cb){
       googleDriveFS.newConfig(function(err) {
         if (err) { return cb(err); }
 
-        utils.logWithTimestamp('Profile \'' + profile.name + '\' created successfully.');
+        profile.info('Profile created successfully.');
         cb(null);
       });
     });
