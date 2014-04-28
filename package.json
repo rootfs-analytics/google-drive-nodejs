@@ -7,9 +7,10 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "googleapis": "0.7.0",
-    "fuse4js": "0.1.9",
-    "memwatch": "0.2.2"
+    "googleapis": "~0.7.0",
+    "fuse4js": "~0.1.9",
+    "memwatch": "~0.2.2",
+    "winston": "~0.7.3"
   },
   "engines": {
     "node": "0.10.x"

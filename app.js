@@ -1,6 +1,7 @@
 var utils = require('./lib/utils.js');
 var fs = require('fs');
 var path = require('path');
+var winston = require('winston');
 
 var Profile = require('./lib/profile.js');
 var GoogleAuth = require('./lib/google_auth.js');
@@ -8,8 +9,25 @@ var GoogleDrive = require('./lib/google_drive.js');
 var GoogleDriveFS = require('./lib/google_drive_fs.js');
 
 var rootProfilePath = path.join(__dirname, ".profiles");
+var rootLogsPath = path.join(__dirname, ".logs");
 
 //---------------------------------------------------------------------------
+
+var healthLogger = new(winston.Logger)({
+  exitOnError: false,
+  transports: [
+    new(winston.transports.DailyRotateFile)({
+      filename: 'health.log',
+      dirname: rootLogsPath,
+      datePattern: 'HH',
+      maxFiles: 24,
+      json: false,
+      timestamp: function () { return new Date().format("yyyy-MM-dd h:mm:ss"); }
+    })
+  ]
+});
+
+healthLogger.info('Process Started');
 
 function print_mem_usage() {
   var memUsage = process.memoryUsage();
@@ -17,7 +35,8 @@ function print_mem_usage() {
   memUsage.heapTotal = memUsage.heapTotal.bytesToSize();
   memUsage.heapUsed = memUsage.heapUsed.bytesToSize();
 
-  console.log('process.memoryUsage =', memUsage);
+  //console.log('process.memoryUsage =', memUsage);
+  healthLogger.info('process.memoryUsage >', memUsage);
 }
 setInterval(print_mem_usage, 60 * 1000);
 
@@ -32,7 +51,8 @@ memwatch.on('stats', function(stats) {
     base: stats.current_base.bytesToSize()
   };
 
-  console.log('memwatch.stats =', myStats);
+  //console.log('memwatch.stats =', myStats);
+  healthLogger.info('memwatch.stats >', myStats);
   print_mem_usage();
 
   /*
@@ -123,31 +143,42 @@ function print_usage() {
 
 //---------------------------------------------------------------------------
 
+process.on('SIGINT', function() {
+  console.log('Process ending.');
+  process.exit();
+});
+
+//---------------------------------------------------------------------------
+
 (function main() {
   utils.mkdir(rootProfilePath, function(err) {
     if (err) { return console.error(err); }
 
-    var args = process.argv;
-    if (args.length == 2) {
-      print_usage();
-    } else {
-      if (args.indexOf('-n') >= 0) {
-        create_new_profile(function(err){
-          if (err) { return console.error(err); }
+    utils.mkdir(rootLogsPath, function(err) {
+    if (err) { return console.error(err); }
 
-          if (args.indexOf('-a') >= 0) {
-            mount_all_profiles(function (err) {
-              if (err) { return console.error(err); }
-            });
-          }
-        });
-      } else if (args.indexOf('-a') >= 0) {
-        mount_all_profiles(function(err) {
-          if (err) { return console.error(err); }
-        });
-      } else {
+      var args = process.argv;
+      if (args.length == 2) {
         print_usage();
+      } else {
+        if (args.indexOf('-n') >= 0) {
+          create_new_profile(function(err) {
+            if (err) { return console.error(err); }
+
+            if (args.indexOf('-a') >= 0) {
+              mount_all_profiles(function (err) {
+                if (err) { return console.error(err); }
+              });
+            }
+          });
+        } else if (args.indexOf('-a') >= 0) {
+          mount_all_profiles(function(err) {
+            if (err) { return console.error(err); }
+          });
+        } else {
+          print_usage();
+        }
       }
-    }
+    });
   });
 })();
